@@ -1,3 +1,5 @@
+import Board from '../components/Tasks/Board'
+
 export default function Index() {
-  return <div>Hello World!</div>
+  return <Board />
 }

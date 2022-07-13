@@ -1,4 +1,4 @@
-import { Config, Ropsten } from '@usedapp/core'
+import { Config, Mainnet, Ropsten } from '@usedapp/core'
 import { getDefaultProvider } from 'ethers'
 
 const config: Config = {
@@ -7,7 +7,7 @@ const config: Config = {
   readOnlyUrls: {
     [Ropsten.chainId]: getDefaultProvider('ropsten'),
   },
-  networks: [Ropsten],
+  networks: [Ropsten, Mainnet],
 }
 
 export default config
