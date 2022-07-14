@@ -1,15 +1,12 @@
 import { useMemo } from 'react'
 
-import { Box, Skeleton } from '@chakra-ui/react'
+import { HStack, Skeleton } from '@chakra-ui/react'
 import { BigNumber } from 'ethers'
 
-import {
-  ToDoCallsArray,
-  useToDoCall,
-  useToDoCalls,
-} from '../../hooks/contracts/useToDo'
+import { ToDoCallsArray, useToDoCalls } from '../../hooks/contracts/useToDo'
+import List from './List'
 
-function BoardTasks(props: { taskIds: number[] }) {
+export default function Board(props: { taskIds: number[] }) {
   const calls = useMemo(() => {
     return props.taskIds.map((key) => ({
       method: 'idToTask',
@@ -17,48 +14,43 @@ function BoardTasks(props: { taskIds: number[] }) {
     })) as ToDoCallsArray
   }, [props.taskIds])
 
-  const callResults = useToDoCalls(calls)
+  const [values, error, isLoading] = useToDoCalls(calls)
 
-  const firstResultWithError = callResults.find((r) => r?.error)
-  if (firstResultWithError) {
-    return <>Something went wrong {firstResultWithError.error?.message}</>
+  if (error) {
+    return <>Something went wrong {error?.message}</>
   }
 
-  const loadedTasks = callResults
-    .filter((result) => result?.value?.[0])
-    .map((result) => {
-      const value = result?.value?.[0]
-      const [status, description, owner, taskId] = value as [
-        number,
-        string,
-        string,
-        BigNumber,
-      ]
-      return { status, description, owner, taskId } as TaskType
-    })
-
-  const isLoading = loadedTasks.length !== calls.length
   if (isLoading) {
     return <Skeleton height="full" />
   }
 
-  return <Box height="full">{loadedTasks.length}</Box>
-}
+  const tasks = values.map((value) => {
+    const [status, description, owner, taskId] = value as [
+      number,
+      string,
+      string,
+      BigNumber,
+    ]
+    return { status, description, owner, taskId } as TaskType
+  })
 
-export default function Board() {
-  const { value: totalTasksValue, error: totalTasksError } =
-    useToDoCall('totalTasks')
-
-  if (totalTasksError) {
-    return <>Something went wrong {totalTasksError.message}</>
-  }
-
-  if (!totalTasksValue) {
-    return <Skeleton height="full" />
-  }
-
-  const totalTasks = (totalTasksValue[0] as BigNumber).toNumber()
-  const taskIds = Array.from(Array(totalTasks).keys()).map((i) => i + 1)
-
-  return <BoardTasks taskIds={taskIds} />
+  return (
+    <HStack width="full" height="full" spacing={4} p={4}>
+      <List
+        tasks={tasks.filter((t) => t.status === 0)}
+        title="Open"
+        status={0}
+      />
+      <List
+        tasks={tasks.filter((t) => t.status === 1)}
+        title="In Progress"
+        status={1}
+      />
+      <List
+        tasks={tasks.filter((t) => t.status === 2)}
+        title="Done"
+        status={2}
+      />
+    </HStack>
+  )
 }
