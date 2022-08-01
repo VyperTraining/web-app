@@ -9,7 +9,7 @@ import {
   ContractMethodNames,
   Params,
 } from '@usedapp/core/dist/esm/src/model/types'
-import { BigNumber, Contract, utils } from 'ethers'
+import { Contract, utils } from 'ethers'
 
 import { ToDo, ToDo__factory } from '../../contracts'
 
@@ -25,33 +25,21 @@ type ToDoParams = Params<ToDo, ToDoMethodNames>
 //   | Awaited<ReturnType<ToDo['functions'][ToDoMethodNames]>>
 //   | undefined
 
-type ReturnTypes =
-  | string
-  | number
-  | BigNumber
-  | ([number, string, string, BigNumber] & {
-      status: number
-      description: string
-      owner: string
-      taskId: BigNumber
-    })
-  | undefined
-
-export function useToDoCall<T extends ReturnTypes>(
-  method: ToDoMethodNames,
-  args: ToDoParams = [],
+export function useToDoCall<M extends ToDoMethodNames>(
+  method: M,
+  args: Parameters<ToDo['functions'][M]>,
 ) {
   const { value, error } = (useCall({
     contract: ContractInstance,
     method,
     args,
-  }) as CallResult<ToDo, typeof method>) ?? {
+  }) as CallResult<ToDo, M>) ?? {
     value: undefined,
     error: undefined,
   }
 
   return [value?.[0], error, !value] as [
-    T | undefined,
+    Awaited<ReturnType<ToDo['functions'][M]>>[0] | undefined,
     Error | undefined,
     boolean,
   ]

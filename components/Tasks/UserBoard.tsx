@@ -40,10 +40,12 @@ function UserBoardTasks(props: Props & { total: BigNumber }) {
 }
 
 export default function UserBoard(props: Props) {
-  const [totalTasksValue, totalTasksError, isLoading] = useToDoCall<BigNumber>(
+  const [totalTasksValue, totalTasksError, isLoading] = useToDoCall(
     'totalUserTasks',
     [props.account],
   )
+
+  const [value, error, loading] = useToDoCall('statusName', [1])
 
   if (totalTasksError) {
     return <Box>Something went wrong {totalTasksError.message}</Box>
