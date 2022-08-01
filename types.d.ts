@@ -6,3 +6,5 @@ type TaskType = {
   owner: string
   taskId: BigNumber
 }
+
+type Children = ReactElement<any, any>

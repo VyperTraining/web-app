@@ -22,7 +22,7 @@ type ToDoRequests<T> = {
   }
 }
 
-type Requests<T> = ToDoRequests<T>
+export type Requests<T> = ToDoRequests<T>
 
 const CONTRACTS = {
   ToDo: new Contract(
@@ -76,17 +76,43 @@ export default function useQuery<T>(requests: Requests<T>) {
   return { data, isLoading, error }
 }
 
-export function TestComponent() {
-  const requests = {
-    theTasks: call.ToDo('userTaskAt', ['0x0', 1]),
-    totalUserTasks1: call.ToDo('totalUserTasks', ['0x1']),
-    OPEN: call.ToDo('statusCode', ['OPEN']),
-    IN_PROGRESS: call.ToDo('statusCode', ['IN_PROGRESS']),
-    DONE: call.ToDo('statusCode', ['DONE']),
+// export function TestComponent() {
+//   const requests = {
+//     theTasks: call.ToDo('userTaskAt', ['0x0', 1]),
+//     totalUserTasks1: call.ToDo('totalUserTasks', ['0x1']),
+//     OPEN: call.ToDo('statusCode', ['OPEN']),
+//     IN_PROGRESS: call.ToDo('statusCode', ['IN_PROGRESS']),
+//     DONE: call.ToDo('statusCode', ['DONE']),
+//   }
+//   const result = useQuery(requests)
+
+//   const totalUserTasks = result.data.theTasks
+
+//   return null
+// }
+
+export function QueryContainer<T>(props: {
+  children: (data: {
+    [K in keyof Requests<T>]:
+      | Awaited<
+          ReturnType<
+            Requests<T>[K]['contract']['functions'][Requests<T>[K]['method']]
+          >
+        >[0]
+      | undefined
+  }) => Children
+  query: Requests<T>
+}) {
+  const { query, children } = props
+  const { data, error, isLoading } = useQuery(query)
+
+  if (error) {
+    return <>{error.message}</>
   }
-  const result = useQuery(requests)
 
-  const totalUserTasks = result.data.theTasks
+  if (isLoading) {
+    return <>Loading ...</>
+  }
 
-  return null
+  return children(data)
 }
