@@ -32,30 +32,19 @@ function ToDoUI(props: Props) {
 
 export function ToDoUIQueryContainer({ account }: { account: string }) {
   const query = {
-    diogoTasksCount: call.ToDo('totalUserTasks', [account]),
+    bestUserTasksCount: call.ToDo('totalUserTasks', [account]),
     totalTasks: call.ToDo('totalTasks', []),
     openId: call.ToDo('statusCode', ['OPEN']),
     inProgressId: call.ToDo('statusCode', ['IN_PROGRESS']),
     doneId: call.ToDo('statusCode', ['COMPLETE']),
-    tokenSupply: call.Token('totalSupply', []),
+    tokenTotal: call.Token('totalSupply', []),
     tokenName: call.Token('name', []),
     tokenSymbol: call.Token('symbol', []),
   }
 
   return (
     <QueryContainer query={query}>
-      {(data) => (
-        <ToDoUI
-          totalTasks={data.diogoTasksCount}
-          openId={data.openId}
-          inProgressId={data.inProgressId}
-          doneId={data.doneId}
-          bestUserTasksCount={data.diogoTasksCount}
-          tokenTotal={data.tokenSupply}
-          tokenName={data.tokenName}
-          tokenSymbol={data.tokenSymbol}
-        />
-      )}
+      {(data) => <ToDoUI {...data} />}
     </QueryContainer>
   )
 }
