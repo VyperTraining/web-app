@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typechain": "typechain --target ethers-v5 --out-dir contracts '../smart-contracts/abis/ToDo.json'",
+    "typechain": "typechain --target ethers-v5 --out-dir contracts '../smart-contracts/abis/*.json'",
     "lint": "next lint"
   },
   "dependencies": {

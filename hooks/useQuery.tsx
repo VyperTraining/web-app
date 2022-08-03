@@ -7,28 +7,43 @@ import {
 } from '@usedapp/core/dist/esm/src/model/types'
 import { Contract, utils } from 'ethers'
 
-import { ToDo, ToDo__factory } from '../contracts'
+import { ToDo, ToDo__factory, Token__factory, Token } from '../contracts'
 
-const Interface = new utils.Interface(ToDo__factory.abi)
+const ToDoInterface = new utils.Interface(ToDo__factory.abi)
 
 type ToDoMethodNames = ContractMethodNames<ToDo>
 type ToDoParams = Params<ToDo, ToDoMethodNames>
 
-type ToDoRequests<T> = {
-  [K in keyof T]: {
-    contract: ToDo
-    method: ToDoMethodNames
-    args: ToDoParams
-  }
+type ToDoRequest = {
+  contract: ToDo
+  method: ToDoMethodNames
+  args: ToDoParams
+  returnType?: Awaited<ReturnType<ToDo['functions'][ToDoMethodNames]>>[0]
 }
 
-export type Requests<T> = ToDoRequests<T>
+const TokenInterface = new utils.Interface(Token__factory.abi)
+
+type TokenMethodNames = ContractMethodNames<Token>
+type TokenParams = Params<Token, TokenMethodNames>
+
+type TokenRequest = {
+  contract: Token
+  method: TokenMethodNames
+  args: TokenParams
+  returnType?: Awaited<ReturnType<Token['functions'][TokenMethodNames]>>[0]
+}
+
+export type Requests = Record<string, ToDoRequest | TokenRequest>
 
 const CONTRACTS = {
   ToDo: new Contract(
     '0x053E254863d00a6532e35af7221CdEcBB808ab29',
-    Interface,
+    ToDoInterface,
   ) as ToDo,
+  Token: new Contract(
+    '0xd5a215CD386c00a14BdC1948342FbC9e19F1936C',
+    TokenInterface,
+  ) as Token,
 }
 
 export function ToDoCall<M extends ToDoMethodNames>(
@@ -39,14 +54,38 @@ export function ToDoCall<M extends ToDoMethodNames>(
     contract: CONTRACTS['ToDo'],
     method,
     args,
+    returnType: undefined as
+      | Awaited<ReturnType<ToDo['functions'][M]>>[0]
+      | undefined,
+  }
+}
+
+export function TokenCall<M extends TokenMethodNames>(
+  method: M,
+  args: Parameters<Token['functions'][M]>,
+) {
+  return {
+    contract: CONTRACTS['Token'],
+    method,
+    args,
+    returnType: undefined as
+      | Awaited<ReturnType<Token['functions'][M]>>[0]
+      | undefined,
   }
 }
 
 export const call = {
   ToDo: ToDoCall,
+  Token: TokenCall,
 }
 
-export default function useQuery<T>(requests: Requests<T>) {
+export default function useQuery<T extends Requests>(
+  requests: T,
+): {
+  data: { [K in keyof T]: NonNullable<T[K]['returnType']> }
+  isLoading: boolean
+  error: Error | undefined
+} {
   const callKeys = Object.keys(requests) as (keyof T)[]
   const calls = callKeys.map((c) => requests[c])
   const result = useCalls(calls)
@@ -56,52 +95,27 @@ export default function useQuery<T>(requests: Requests<T>) {
   const isLoading = loadedValues.length !== calls.length
 
   const data = useMemo(() => {
-    return result.reduce(
-      (accumulator, item, index) => {
-        accumulator[callKeys[index]] = item?.value?.[0]
-        return accumulator
-      },
-      {} as {
-        [K in keyof Requests<T>]:
-          | Awaited<
-              ReturnType<
-                Requests<T>[K]['contract']['functions'][Requests<T>[K]['method']]
-              >
-            >[0]
-          | undefined
-      },
-    )
+    const requestWithData = {} as {
+      [K in keyof T]: NonNullable<T[K]['returnType']>
+    }
+    callKeys.forEach((k, index) => {
+      requestWithData[k] = result[index]?.value?.[0]
+    })
+    return requestWithData
   }, [result, callKeys])
 
   return { data, isLoading, error }
 }
 
-// export function TestComponent() {
-//   const requests = {
-//     theTasks: call.ToDo('userTaskAt', ['0x0', 1]),
-//     totalUserTasks1: call.ToDo('totalUserTasks', ['0x1']),
-//     OPEN: call.ToDo('statusCode', ['OPEN']),
-//     IN_PROGRESS: call.ToDo('statusCode', ['IN_PROGRESS']),
-//     DONE: call.ToDo('statusCode', ['DONE']),
-//   }
-//   const result = useQuery(requests)
+export type DataType<T extends Requests> = {
+  [K in keyof T]: T[K]['returnType']
+}
 
-//   const totalUserTasks = result.data.theTasks
-
-//   return null
-// }
-
-export function QueryContainer<T>(props: {
+export function QueryContainer<T extends Requests>(props: {
   children: (data: {
-    [K in keyof Requests<T>]:
-      | Awaited<
-          ReturnType<
-            Requests<T>[K]['contract']['functions'][Requests<T>[K]['method']]
-          >
-        >[0]
-      | undefined
+    [K in keyof T]: NonNullable<T[K]['returnType']>
   }) => Children
-  query: Requests<T>
+  query: T
 }) {
   const { query, children } = props
   const { data, error, isLoading } = useQuery(query)

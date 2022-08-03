@@ -82,6 +82,13 @@ const _abi = [
   },
   {
     type: "function",
+    name: "doNothing",
+    stateMutability: "pure",
+    inputs: [],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "statusName",
     stateMutability: "view",
     inputs: [
