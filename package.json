@@ -6,12 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "typechain": "typechain --target ethers-v5 --out-dir contracts '../smart-contracts/abis/*.json'",
+    "codegen": "dappql && npm run format",
+    "format": "eslint --ext .js,.jsx,.ts,.tsx ./contracts --fix",
     "lint": "next lint"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.2.3",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
+    "@metamask/jazzicon": "^2.0.0",
     "@usedapp/core": "^1.1.1",
     "ethers": "^5.6.9",
     "framer-motion": "^6.4.3",
@@ -21,15 +25,18 @@
     "react-icons": "^4.4.0"
   },
   "devDependencies": {
+    "@typechain/ethers-v5": "^10.1.0",
     "@types/node": "18.0.3",
     "@types/react": "18.0.15",
     "@types/react-dom": "18.0.6",
     "@typescript-eslint/eslint-plugin": "^5.30.6",
     "@typescript-eslint/parser": "^5.30.6",
+    "dappql": "^0.0.3",
     "eslint": "8.19.0",
     "eslint-config-next": "12.2.2",
     "eslint-config-universe": "^11.0.0",
     "prettier": "^2.7.1",
+    "typechain": "^8.1.0",
     "typescript": "4.7.4"
   }
 }
