@@ -10,7 +10,7 @@ import {
 import { useEthers } from '@usedapp/core'
 import { BsPlusLg } from 'react-icons/bs'
 
-import { useToDoFunction } from '../../hooks/contracts/useToDo'
+import { useToDoFunction } from '../../contracts/hooks/useToDo'
 import Task from './Task'
 import TaskModal from './TaskModal'
 

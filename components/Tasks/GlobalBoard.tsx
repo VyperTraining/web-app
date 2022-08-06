@@ -1,12 +1,13 @@
 import { Box, Skeleton } from '@chakra-ui/react'
-import { BigNumber } from 'ethers'
 
-import { useToDoCall } from '../../hooks/contracts/useToDo'
+import { useToDoCall } from '../../contracts/hooks/useToDo'
 import Board from './Board'
 
 export default function GlobalBoard() {
-  const [totalTasksValue, totalTasksError, isLoading] =
-    useToDoCall<BigNumber>('totalTasks')
+  const [totalTasksValue, totalTasksError, isLoading] = useToDoCall(
+    'totalTasks',
+    [],
+  )
 
   if (totalTasksError) {
     return <Box>Something went wrong {totalTasksError.message}</Box>

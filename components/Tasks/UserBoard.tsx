@@ -3,11 +3,9 @@ import { useMemo } from 'react'
 import { Box, Skeleton } from '@chakra-ui/react'
 import { BigNumber } from 'ethers'
 
-import {
-  ToDoCallsArray,
-  useToDoCall,
-  useToDoCalls,
-} from '../../hooks/contracts/useToDo'
+import useQuery, { call } from '../../contracts'
+import { useToDoCall } from '../../contracts/hooks/useToDo'
+import { Requests } from '../../contracts/requests'
 import Board from './Board'
 
 type Props = {
@@ -18,13 +16,14 @@ function UserBoardTasks(props: Props & { total: BigNumber }) {
   const calls = useMemo(() => {
     const taskIndexes = Array.from(Array(props.total.toNumber()).keys())
 
-    return taskIndexes.map((key) => ({
-      method: 'userTaskAt',
-      args: [props.account, key],
-    })) as ToDoCallsArray
+    const query = {} as Requests
+    taskIndexes.forEach((key) => {
+      query[key] = call.ToDo('userTaskAt', [props.account, key])
+    })
+    return query
   }, [props.total, props.account])
 
-  const [values, error, isLoading] = useToDoCalls(calls)
+  const { data, error, isLoading } = useQuery(calls)
 
   if (error) {
     return <Box>Something went wrong {error.message}</Box>
@@ -34,7 +33,9 @@ function UserBoardTasks(props: Props & { total: BigNumber }) {
     return <Skeleton height="full" />
   }
 
-  const taskIds = values.map((v) => (v as BigNumber).toNumber())
+  const taskIds = Object.keys(data).map((v) =>
+    (data[v] as BigNumber).toNumber(),
+  )
 
   return <Board taskIds={taskIds} />
 }
@@ -44,8 +45,6 @@ export default function UserBoard(props: Props) {
     'totalUserTasks',
     [props.account],
   )
-
-  const [value, error, loading] = useToDoCall('statusName', [1])
 
   if (totalTasksError) {
     return <Box>Something went wrong {totalTasksError.message}</Box>

@@ -1,7 +1,7 @@
-import { Config, Ropsten } from '@usedapp/core'
+import { Ropsten } from '@usedapp/core'
 import { getDefaultProvider } from 'ethers'
 
-const config: Config = {
+const config = {
   autoConnect: true,
   readOnlyChainId: Ropsten.chainId,
   readOnlyUrls: {

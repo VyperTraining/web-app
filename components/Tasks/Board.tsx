@@ -3,18 +3,21 @@ import { useMemo } from 'react'
 import { HStack, Skeleton } from '@chakra-ui/react'
 import { BigNumber } from 'ethers'
 
-import { ToDoCallsArray, useToDoCalls } from '../../hooks/contracts/useToDo'
+import useQuery, { call } from '../../contracts'
+import { Requests } from '../../contracts/requests'
 import List from './List'
 
 export default function Board(props: { taskIds: number[] }) {
   const calls = useMemo(() => {
-    return props.taskIds.map((key) => ({
-      method: 'idToTask',
-      args: [key],
-    })) as ToDoCallsArray
+    const query = {} as Requests
+
+    props.taskIds.forEach((key) => {
+      query[key] = call.ToDo('idToTask', [key])
+    })
+    return query
   }, [props.taskIds])
 
-  const [values, error, isLoading] = useToDoCalls(calls)
+  const { data, error, isLoading } = useQuery(calls)
 
   if (error) {
     return <>Something went wrong {error?.message}</>
@@ -24,8 +27,8 @@ export default function Board(props: { taskIds: number[] }) {
     return <Skeleton height="full" />
   }
 
-  const tasks = values.map((value) => {
-    const [status, description, owner, taskId] = value as [
+  const tasks = Object.keys(data).map((k) => {
+    const [status, description, owner, taskId] = data[k] as [
       number,
       string,
       string,
